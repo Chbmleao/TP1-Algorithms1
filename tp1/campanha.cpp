@@ -5,25 +5,25 @@
 #include <fstream>
 #include "campanha.hpp" 
 
-void printMatrix(int** matrix, int height) {
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < height; i++) {
+void printMatrix(int** matrix, int side) {
+    for (int i = 0; i < side; i++) {
+        for (int j = 0; j < side; j++) {
             std::cout << matrix[i][j] << " ";
         }
         std::cout << std::endl;
     }   
 }
 
-int** createNullMatrix(int height) {
-    int** adjMatrix;
-    adjMatrix = new int*[height];
-    for (int i = 0; i < height; i++) {
-        adjMatrix[i] = new int[height];
-        for (int j = 0; j < height; j++){
-            adjMatrix[i][j] = 0;
+int** createNullMatrix(int side) {
+    int** matrix;
+    matrix = new int*[side];
+    for (int i = 0; i < side; i++) {
+        matrix[i] = new int[side];
+        for (int j = 0; j < side; j++){
+            matrix[i][j] = 0;
         }
     }
-    return adjMatrix;
+    return matrix;
 }
 
 int** createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals) {
@@ -40,13 +40,27 @@ int** createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposa
         rejProposal1--;
         rejProposal2--;
 
-        if (accProposal1 != -1 && accProposal2 != -1) {     // X, Y
+        if (accProposal1 == -1) {
+            adjMatrix[accProposal1 + numProposals][accProposal1] = 1;   // X' -> X
+            adjMatrix[accProposal1][accProposal1 + numProposals] = 1;   // X -> X'
+        } else if (accProposal2 == -1) {
+            adjMatrix[accProposal2 + numProposals][accProposal2] = 1;   // X' -> X
+            adjMatrix[accProposal2][accProposal2 + numProposals] = 1;   // X -> X'
+        } else if (rejProposal1 == -1) {
+            adjMatrix[rejProposal1 + numProposals][rejProposal1] = 1;   // X' -> X
+            adjMatrix[rejProposal1][rejProposal1 + numProposals] = 1;   // X -> X'
+        } else if (rejProposal2 == -1) {
+            adjMatrix[rejProposal2 + numProposals][rejProposal2] = 1;   // X' -> X
+            adjMatrix[rejProposal2][rejProposal2 + numProposals] = 1;   // X -> X'
+        } else {
+            if (accProposal1 != -1 && accProposal2 != -1) {     // X, Y
             adjMatrix[accProposal1 + numProposals][accProposal2] = 1;   // X' -> Y
             adjMatrix[accProposal2 + numProposals][accProposal1] = 1;   // Y' -> X
-        }
-        if (rejProposal1, rejProposal2) {   // X', Y'
-            adjMatrix[accProposal1][accProposal2 + numProposals] = 1;   // X -> Y'
-            adjMatrix[accProposal2][accProposal1 + numProposals] = 1;   // Y -> X'
+            }
+            if (rejProposal1, rejProposal2) {   // X', Y'
+                adjMatrix[accProposal1][accProposal2 + numProposals] = 1;   // X -> Y'
+                adjMatrix[accProposal2][accProposal1 + numProposals] = 1;   // Y -> X'
+            }
         }
     }
     return adjMatrix;
