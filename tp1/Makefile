@@ -1,4 +1,4 @@
-CC=gcc
+CC=g++
 CFLAGS=-I. -Wall -Wextra -Werror -std=c99 -pedantic -O2
 DEPS = campanha.h
 OBJ = campanha.o main.o 
@@ -8,6 +8,9 @@ OBJ = campanha.o main.o
 
 main: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+
+run: 
+	./main
 
 clean:
 	rm -f *.o main
