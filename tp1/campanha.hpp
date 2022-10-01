@@ -15,5 +15,5 @@ struct Graph {
 
 void printMatrix(Graph graph);
 Graph createNullMatrix(int side);
-Graph createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals);
-void readFile(std::string fileName);
+Graph createAdjMatrix(int numFollowers, int numProposals);
+void readFile();

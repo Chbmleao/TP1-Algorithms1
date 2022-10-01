@@ -35,15 +35,15 @@ Graph createNullMatrix(int size) {
     return nullGraph;
 }
 
-Graph createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals) {
+Graph createAdjMatrix(int numFollowers, int numProposals) {
     Graph graph = createNullMatrix(2*numProposals); 
    
     for (int i = 0; i < numFollowers; i++) {
         int accProposal1, accProposal2, rejProposal1, rejProposal2;
-        inputFile >> accProposal1;
-        inputFile >> accProposal2;
-        inputFile >> rejProposal1;
-        inputFile >> rejProposal2;
+        std::cin >> accProposal1;
+        std::cin >> accProposal2;
+        std::cin >> rejProposal1;
+        std::cin >> rejProposal2;
         accProposal1--;
         accProposal2--;
         rejProposal1--;
@@ -71,25 +71,19 @@ Graph createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposa
     return graph;
 }
 
-void readFile(std::string fileName) {
-    std::ifstream inputFile(fileName);
-    if(inputFile.is_open()) {
-        std::string strAux;
-        int numFollowers;
-        int numProposals;
+void readFile() {
+    int numFollowers;
+    int numProposals;
 
-        while (inputFile.good()) {
-            inputFile >> numFollowers;
-            inputFile >> numProposals;
+    while (!(numFollowers == 0 && numProposals == 0)) {
+        std::cin >> numFollowers;
+        std::cin >> numProposals;
 
-            if(numFollowers == 0 && numProposals == 0) 
-                break;
-            
-            Graph graph = createAdjMatrix(inputFile, numFollowers, numProposals);
+        if(numFollowers == 0 && numProposals == 0) 
+            break;
+        
+        Graph graph = createAdjMatrix(numFollowers, numProposals);
 
-            printMatrix(graph);
-        }
-    } else {
-        std::cout << "Could not open the Input File.";
+        printMatrix(graph);
     }
 }

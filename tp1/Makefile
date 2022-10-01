@@ -12,7 +12,7 @@ main: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 run: 
-	./main
+	./main < input.txt
 
 clean:
 	rm -f *.o main
