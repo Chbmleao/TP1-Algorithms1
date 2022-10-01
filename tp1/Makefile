@@ -1,7 +1,9 @@
 CC=g++
 CFLAGS=-I. -Wall -Wextra -Werror -std=c99 -pedantic -O2
-DEPS = campanha.h
+DEPS = campanha.hpp
 OBJ = campanha.o main.o 
+
+all: main run
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
