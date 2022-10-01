@@ -1,35 +1,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include "campanha.hpp" 
 
-void printMatrix(Matrix matrix) {
-    for (int i = 0; i < matrix.size; i++) {
-        for (int j = 0; j < matrix.size; j++) {
-            std::cout << matrix.matrix[i][j] << " ";
+void printMatrix(Graph graph) {
+    std::cout << std::setfill(' ') << std::setw(4) << " ";
+    for (int i = 0; i < graph.size; i++) {
+        std::cout << std::setfill(' ') << std::setw(4) << i;
+    }
+    std::cout << std::endl;
+
+    for (int i = 0; i < graph.size; i++) {
+        std::cout << std::setfill(' ') << std::setw(4) << i;
+        for (int j = 0; j < graph.size; j++) {
+            std::cout << std::setfill(' ') << std::setw(4) << graph.matrix[i][j];
         }
         std::cout << std::endl;
-    }   
-    std::cout << std::endl;
+    }
 }
 
-Matrix createNullMatrix(int size) {
-    Matrix nullMatrix;
-    nullMatrix.matrix = new int*[size];
+Graph createNullMatrix(int size) {
+    Graph nullGraph;
+    nullGraph.matrix = new int*[size];
     for (int i = 0; i < size; i++) {
-        nullMatrix.matrix[i] = new int[size];
+        nullGraph.matrix[i] = new int[size];
         for (int j = 0; j < size; j++){
-            nullMatrix.matrix[i][j] = 0;
+            nullGraph.matrix[i][j] = 0;
         }
     }
-    nullMatrix.size = size;
-    return nullMatrix;
+    nullGraph.size = size;
+    return nullGraph;
 }
 
-Matrix createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals) {
-    Matrix adjMatrix = createNullMatrix(2*numProposals); 
+Graph createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals) {
+    Graph graph = createNullMatrix(2*numProposals); 
    
     for (int i = 0; i < numFollowers; i++) {
         int accProposal1, accProposal2, rejProposal1, rejProposal2;
@@ -43,25 +50,25 @@ Matrix createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numPropos
         rejProposal2--;
 
         if (accProposal1 == -1) {
-            adjMatrix.matrix[adjMatrix.calculateDeniedIndex(accProposal2)][accProposal2] = 1;   // X' -> X
-            adjMatrix.matrix[accProposal2][adjMatrix.calculateDeniedIndex(accProposal2)] = 1;   // X -> X'
+            graph.matrix[graph.calculateDeniedIndex(accProposal2)][accProposal2] = 1;   // X' -> X
+            graph.matrix[accProposal2][graph.calculateDeniedIndex(accProposal2)] = 1;   // X -> X'
         } else if (accProposal2 == -1) {
-            adjMatrix.matrix[adjMatrix.calculateDeniedIndex(accProposal1)][accProposal1] = 1;   // X' -> X
-            adjMatrix.matrix[accProposal1][adjMatrix.calculateDeniedIndex(accProposal1)] = 1;   // X -> X'
+            graph.matrix[graph.calculateDeniedIndex(accProposal1)][accProposal1] = 1;   // X' -> X
+            graph.matrix[accProposal1][graph.calculateDeniedIndex(accProposal1)] = 1;   // X -> X'
         } else if (rejProposal1 == -1) {
-            adjMatrix.matrix[adjMatrix.calculateDeniedIndex(rejProposal2)][rejProposal2] = 1;   // X' -> X
-            adjMatrix.matrix[rejProposal2][adjMatrix.calculateDeniedIndex(rejProposal2)] = 1;   // X -> X'
+            graph.matrix[graph.calculateDeniedIndex(rejProposal2)][rejProposal2] = 1;   // X' -> X
+            graph.matrix[rejProposal2][graph.calculateDeniedIndex(rejProposal2)] = 1;   // X -> X'
         } else if (rejProposal2 == -1) {
-            adjMatrix.matrix[adjMatrix.calculateDeniedIndex(rejProposal1)][rejProposal1] = 1;   // X' -> X
-            adjMatrix.matrix[rejProposal1][adjMatrix.calculateDeniedIndex(rejProposal1)] = 1;   // X -> X'
+            graph.matrix[graph.calculateDeniedIndex(rejProposal1)][rejProposal1] = 1;   // X' -> X
+            graph.matrix[rejProposal1][graph.calculateDeniedIndex(rejProposal1)] = 1;   // X -> X'
         } else {
-            adjMatrix.matrix[adjMatrix.calculateDeniedIndex(accProposal1)][accProposal2] = 1;   // X' -> Y
-            adjMatrix.matrix[adjMatrix.calculateDeniedIndex(accProposal2)][accProposal1] = 1;   // Y' -> X
-            adjMatrix.matrix[rejProposal1][adjMatrix.calculateDeniedIndex(rejProposal2)] = 1;   // X -> Y'
-            adjMatrix.matrix[rejProposal2][adjMatrix.calculateDeniedIndex(rejProposal1)] = 1;   // Y -> X'
+            graph.matrix[graph.calculateDeniedIndex(accProposal1)][accProposal2] = 1;   // X' -> Y
+            graph.matrix[graph.calculateDeniedIndex(accProposal2)][accProposal1] = 1;   // Y' -> X
+            graph.matrix[rejProposal1][graph.calculateDeniedIndex(rejProposal2)] = 1;   // X -> Y'
+            graph.matrix[rejProposal2][graph.calculateDeniedIndex(rejProposal1)] = 1;   // Y -> X'
         }
     }
-    return adjMatrix;
+    return graph;
 }
 
 void readFile(std::string fileName) {
@@ -78,9 +85,9 @@ void readFile(std::string fileName) {
             if(numFollowers == 0 && numProposals == 0) 
                 break;
             
-            Matrix adjMatrix = createAdjMatrix(inputFile, numFollowers, numProposals);
+            Graph graph = createAdjMatrix(inputFile, numFollowers, numProposals);
 
-            printMatrix(adjMatrix);
+            printMatrix(graph);
         }
     } else {
         std::cout << "Could not open the Input File.";

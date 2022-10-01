@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 
-struct Matrix {
+struct Graph {
     int** matrix;
     int size;
     int calculateDeniedIndex(int index) {
@@ -13,7 +13,7 @@ struct Matrix {
     }
 };
 
-void printMatrix(Matrix matrix);
-Matrix createNullMatrix(int side);
-Matrix createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals);
+void printMatrix(Graph graph);
+Graph createNullMatrix(int side);
+Graph createAdjMatrix(std::ifstream &inputFile, int numFollowers, int numProposals);
 void readFile(std::string fileName);

@@ -3,8 +3,7 @@
 #include "campanha.hpp"
 
 int main() {
-  
+    readFile("input.txt");    
 
-  return 0;
+    return 0;
 }
-
