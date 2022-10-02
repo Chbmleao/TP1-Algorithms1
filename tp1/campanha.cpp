@@ -6,6 +6,31 @@
 #include <fstream>
 #include "campanha.hpp" 
 
+void DFS(Graph graph, int* isAlreadyVisited, int vertice) {
+    isAlreadyVisited[vertice] = 1;
+    for (int i = 0; i < graph.size; i++) {
+        if (graph.matrix[vertice][i] == 1) { // for each neighbor vertice that has not yet been visited
+            if (isAlreadyVisited[i] == 0) {
+                DFS(graph, isAlreadyVisited, i);
+            } 
+        }
+    }
+    std::cout <<  vertice << " ";
+}
+
+void dephtFirstSearch(Graph graph) {
+    // create array to mark visited vertices
+    int* isAlreadyVisited = new int[graph.size];
+    for (int i = 0; i < graph.size; i++) {
+        isAlreadyVisited[i] = 0;
+    }
+    for (int i = 0; i < graph.size; i++) {
+        if (isAlreadyVisited[i] == 0) {
+                DFS(graph, isAlreadyVisited, i);
+        } 
+    }
+}
+
 void printMatrix(Graph graph) {
     std::cout << std::setfill(' ') << std::setw(4) << " ";
     for (int i = 0; i < graph.size; i++) {
@@ -85,5 +110,7 @@ void readFile() {
         Graph graph = createAdjMatrix(numFollowers, numProposals);
 
         printMatrix(graph);
+
+        dephtFirstSearch(graph);
     }
 }

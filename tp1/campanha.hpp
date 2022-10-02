@@ -13,6 +13,8 @@ struct Graph {
     }
 };
 
+void DFS(Graph graph, int** isAlreadyVisited, int vertice);
+void dephtFirstSearch(Graph graph);
 void printMatrix(Graph graph);
 Graph createNullMatrix(int side);
 Graph createAdjMatrix(int numFollowers, int numProposals);
