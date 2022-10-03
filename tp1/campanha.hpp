@@ -3,19 +3,23 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
 
-struct Graph {
-    int** matrix;
-    int size;
-    int calculateDeniedIndex(int index) {
-        int deniedIndex = index + (this->size / 2);
-        return deniedIndex;
-    }
+class Graph {
+    public:
+        Graph(int size);
+        int calculateIndex(int index, bool negative);
+        void addToOrder(int index);
+        std::vector<std::vector<int>> matrix; 
+        int size;   
+        std::vector<int> order;
+        int orderCount;
 };
 
-void DFS(Graph graph, int** isAlreadyVisited, int vertice);
-void dephtFirstSearch(Graph graph);
+bool isSatisfiable(Graph graph);
+void DFS(Graph* graph, int** isAlreadyVisited, int vertice);
+void dephtFirstSearch(Graph* graph);
 void printMatrix(Graph graph);
-Graph createNullMatrix(int side);
-Graph createAdjMatrix(int numFollowers, int numProposals);
+std::vector<std::vector<int>> createNullMatrix(int side);
+Graph* createAdjMatrix(int numFollowers, int numProposals);
 void readFile();

@@ -6,25 +6,66 @@
 #include <fstream>
 #include "campanha.hpp" 
 
-void DFS(Graph graph, int* isAlreadyVisited, int vertice) {
+Graph::Graph(int size) {
+    this->size = size;
+    this->order = std::vector<int>(this->size, 0);
+    for (int i = 0; i < this->size; i++) {
+        this->order[i] = -1;
+    }
+    this->orderCount = 0;
+    this->matrix = createNullMatrix(this->size);
+}
+
+int Graph::calculateIndex(int index, bool negative) {
+    index--;
+    if (negative) 
+        index += this->size / 2;
+    return index;
+}
+
+void Graph::addToOrder(int index) {
+    this->order[this->orderCount] = index;
+    this->orderCount++;
+}
+
+bool isSatisfiable(Graph graph) {
+    std::vector<int> proposals(graph.size / 2, 0);
+    
+    for (int i = graph.size-1; i >= graph.size/2; i--) {
+        if (graph.order[i] >= graph.size / 2){
+            if (proposals[graph.order[i] - (graph.size / 2)] == 0) 
+                proposals[graph.order[i] - (graph.size / 2)] = 1;
+            else
+                return false;
+        } else {
+            if (proposals[graph.order[i]] == 0) 
+                proposals[graph.order[i]] = 1;
+            else   
+                return false;
+        }
+    }
+    return true;
+}
+
+void DFS(Graph *graph, int* isAlreadyVisited, int vertice) {
     isAlreadyVisited[vertice] = 1;
-    for (int i = 0; i < graph.size; i++) {
-        if (graph.matrix[vertice][i] == 1) { // for each neighbor vertice that has not yet been visited
+    for (int i = 0; i < graph->size; i++) {
+        if (graph->matrix[vertice][i] == 1) { // for each neighbor vertice that has not yet been visited
             if (isAlreadyVisited[i] == 0) {
                 DFS(graph, isAlreadyVisited, i);
             } 
         }
     }
-    std::cout <<  vertice << " ";
+    graph->addToOrder(vertice);
 }
 
-void dephtFirstSearch(Graph graph) {
+void dephtFirstSearch(Graph *graph) {
     // create array to mark visited vertices
-    int* isAlreadyVisited = new int[graph.size];
-    for (int i = 0; i < graph.size; i++) {
+    int* isAlreadyVisited = new int[graph->size];
+    for (int i = 0; i < graph->size; i++) {
         isAlreadyVisited[i] = 0;
     }
-    for (int i = 0; i < graph.size; i++) {
+    for (int i = 0; i < graph->size; i++) {
         if (isAlreadyVisited[i] == 0) {
                 DFS(graph, isAlreadyVisited, i);
         } 
@@ -34,34 +75,41 @@ void dephtFirstSearch(Graph graph) {
 void printMatrix(Graph graph) {
     std::cout << std::setfill(' ') << std::setw(4) << " ";
     for (int i = 0; i < graph.size; i++) {
-        std::cout << std::setfill(' ') << std::setw(4) << i;
+        if (i < graph.size / 2)
+            std::cout << std::setfill(' ') << std::setw(4) << "X" << i+1;
+        else
+            std::cout << std::setfill(' ') << std::setw(4) << "X" << i+1 - graph.size/2 << "'";   
     }
     std::cout << std::endl;
 
     for (int i = 0; i < graph.size; i++) {
-        std::cout << std::setfill(' ') << std::setw(4) << i;
+        if (i < graph.size / 2)
+            std::cout << std::setfill(' ') << std::setw(3) << "X" << i+1 << " ";
+        else
+            std::cout << std::setfill(' ') << std::setw(3) << "X" << i+1 - graph.size/2 << "'"; 
+
         for (int j = 0; j < graph.size; j++) {
-            std::cout << std::setfill(' ') << std::setw(4) << graph.matrix[i][j];
+            if (j < graph.size / 2)
+                std::cout << std::setfill(' ') << std::setw(4) << graph.matrix[i][j] << " ";
+            else
+                std::cout << std::setfill(' ') << std::setw(4) << graph.matrix[i][j] << "  ";
         }
         std::cout << std::endl;
     }
 }
 
-Graph createNullMatrix(int size) {
-    Graph nullGraph;
-    nullGraph.matrix = new int*[size];
+std::vector<std::vector<int>> createNullMatrix(int size) {
+    std::vector<std::vector<int>> matrix(size, std::vector<int>(size));
     for (int i = 0; i < size; i++) {
-        nullGraph.matrix[i] = new int[size];
         for (int j = 0; j < size; j++){
-            nullGraph.matrix[i][j] = 0;
+            matrix[i][j] = 0;
         }
     }
-    nullGraph.size = size;
-    return nullGraph;
+    return matrix;
 }
 
-Graph createAdjMatrix(int numFollowers, int numProposals) {
-    Graph graph = createNullMatrix(2*numProposals); 
+Graph* createAdjMatrix(int numFollowers, int numProposals) {
+    Graph* graph = new Graph(2*numProposals);
    
     for (int i = 0; i < numFollowers; i++) {
         int accProposal1, accProposal2, rejProposal1, rejProposal2;
@@ -69,28 +117,47 @@ Graph createAdjMatrix(int numFollowers, int numProposals) {
         std::cin >> accProposal2;
         std::cin >> rejProposal1;
         std::cin >> rejProposal2;
-        accProposal1--;
-        accProposal2--;
-        rejProposal1--;
-        rejProposal2--;
 
-        if (accProposal1 == -1) {
-            graph.matrix[graph.calculateDeniedIndex(accProposal2)][accProposal2] = 1;   // X' -> X
-            graph.matrix[accProposal2][graph.calculateDeniedIndex(accProposal2)] = 1;   // X -> X'
-        } else if (accProposal2 == -1) {
-            graph.matrix[graph.calculateDeniedIndex(accProposal1)][accProposal1] = 1;   // X' -> X
-            graph.matrix[accProposal1][graph.calculateDeniedIndex(accProposal1)] = 1;   // X -> X'
-        } else if (rejProposal1 == -1) {
-            graph.matrix[graph.calculateDeniedIndex(rejProposal2)][rejProposal2] = 1;   // X' -> X
-            graph.matrix[rejProposal2][graph.calculateDeniedIndex(rejProposal2)] = 1;   // X -> X'
-        } else if (rejProposal2 == -1) {
-            graph.matrix[graph.calculateDeniedIndex(rejProposal1)][rejProposal1] = 1;   // X' -> X
-            graph.matrix[rejProposal1][graph.calculateDeniedIndex(rejProposal1)] = 1;   // X -> X'
+        // accepted proposals treatment
+        if (accProposal1 == 0 || accProposal2 == 0) {
+            if (accProposal1 == 0 && accProposal2 != 0) {
+                graph->matrix[graph->calculateIndex(accProposal2, true)]
+                            [graph->calculateIndex(accProposal2, false)] = 1;     // X' -> X
+                // std::cout << "1- X" << accProposal2 << "' -> X" << accProposal2 << std::endl;  
+            } 
+            if (accProposal2 == 0 && accProposal1 != 0) {
+                graph->matrix[graph->calculateIndex(accProposal1, true)]
+                            [graph->calculateIndex(accProposal1, false)] = 1;     // X' -> X
+                // std::cout << "2- X" << accProposal1 << "' -> X" << accProposal1 << std::endl;              
+            }
         } else {
-            graph.matrix[graph.calculateDeniedIndex(accProposal1)][accProposal2] = 1;   // X' -> Y
-            graph.matrix[graph.calculateDeniedIndex(accProposal2)][accProposal1] = 1;   // Y' -> X
-            graph.matrix[rejProposal1][graph.calculateDeniedIndex(rejProposal2)] = 1;   // X -> Y'
-            graph.matrix[rejProposal2][graph.calculateDeniedIndex(rejProposal1)] = 1;   // Y -> X'
+            graph->matrix[graph->calculateIndex(accProposal1, true)]
+                        [graph->calculateIndex(accProposal2, false)] = 1;   // X' -> Y
+            graph->matrix[graph->calculateIndex(accProposal2, true)]
+                        [graph->calculateIndex(accProposal1, false)] = 1;   // Y' -> X
+            // std::cout << "3- X" << accProposal1 << "' -> X" << accProposal2 << std::endl;
+            // std::cout << "4- X" << accProposal2 << "' -> X" << accProposal1 << std::endl;
+        }
+        
+        // rejected proposals treatment
+        if (rejProposal1 == 0 || rejProposal2 == 0) {
+            if (rejProposal1 == 0 && rejProposal2 != 0) {
+                graph->matrix[graph->calculateIndex(rejProposal2, false)]
+                            [graph->calculateIndex(rejProposal2, true)] = 1;     // X -> X'
+                // std::cout << "5- X" << rejProposal2 << " -> X" << rejProposal2 << "'" << std::endl;  
+            }
+            if (rejProposal2 == 0 && rejProposal1 != 0) {
+                graph->matrix[graph->calculateIndex(rejProposal1, false)]
+                            [graph->calculateIndex(rejProposal1, true)] = 1;    // X -> X'
+                // std::cout << "6- X" << rejProposal1 << " -> X" << rejProposal1 << "'" << std::endl;
+            }
+        } else {
+            graph->matrix[graph->calculateIndex(rejProposal1, false)]
+                        [graph->calculateIndex(rejProposal2, true)] = 1;   // X -> Y'
+            graph->matrix[graph->calculateIndex(rejProposal2, false)]
+                        [graph->calculateIndex(rejProposal1, true)] = 1;   // Y -> X'
+            // std::cout << "7- X" << rejProposal1 << " -> X" << rejProposal2 << "'" << std::endl;
+            // std::cout << "8- X" << rejProposal2 << " -> X" << rejProposal1 << "'" << std::endl;
         }
     }
     return graph;
@@ -99,18 +166,28 @@ Graph createAdjMatrix(int numFollowers, int numProposals) {
 void readFile() {
     int numFollowers;
     int numProposals;
+    std::string output;
 
-    while (!(numFollowers == 0 && numProposals == 0)) {
-        std::cin >> numFollowers;
-        std::cin >> numProposals;
+    std::cin >> numFollowers;
+    std::cin >> numProposals;
 
-        if(numFollowers == 0 && numProposals == 0) 
-            break;
-        
-        Graph graph = createAdjMatrix(numFollowers, numProposals);
+    while (numFollowers != 0 && numProposals != 0) {        
+        Graph* graph = createAdjMatrix(numFollowers, numProposals);
 
-        printMatrix(graph);
+        // printMatrix(*graph);
 
         dephtFirstSearch(graph);
+        
+        if(isSatisfiable(*graph))
+            std::cout << "sim" << std::endl;
+        else
+            std::cout << "nao" << std::endl;
+
+        delete graph;
+
+        std::cin >> numFollowers;
+        std::cin >> numProposals;
     }
+
+    std::cout << output;
 }
