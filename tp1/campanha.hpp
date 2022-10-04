@@ -10,14 +10,16 @@ class Graph {
         Graph(int size);
         int calculateIndex(int index, bool negative);
         void addToOrder(int index);
-        std::vector<std::vector<int>> matrix; 
-        int size;   
-        std::vector<int> order;
+        int size;
         int orderCount;
+        std::vector<std::vector<int>> matrix; 
+        std::vector<int> order;
+        std::vector<int> stronglyConnectedComponent;
 };
 
 bool isSatisfiable(Graph graph);
-void DFS(Graph* graph, int** isAlreadyVisited, int vertice);
+void DFS1(Graph* graph, int* isAlreadyVisited, int vertice);
+void DFS2(Graph* graph, int* isAlreadyVisitedInv, int vertice, int counter);
 void dephtFirstSearch(Graph* graph);
 void printMatrix(Graph graph);
 std::vector<std::vector<int>> createNullMatrix(int side);

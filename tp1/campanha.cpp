@@ -8,10 +8,11 @@
 
 Graph::Graph(int size) {
     this->size = size;
-    this->order = std::vector<int>(this->size, 0);
-    for (int i = 0; i < this->size; i++) {
-        this->order[i] = -1;
-    }
+    // create order vector and initialize with -1
+    this->order = std::vector<int>(this->size, -1);
+    // create Strongly Connected Component vector and initialize with -1
+    this->stronglyConnectedComponent = std::vector<int>(this->size, -1);
+
     this->orderCount = 0;
     this->matrix = createNullMatrix(this->size);
 }
@@ -29,47 +30,75 @@ void Graph::addToOrder(int index) {
 }
 
 bool isSatisfiable(Graph graph) {
-    std::vector<int> proposals(graph.size / 2, 0);
-    
-    for (int i = graph.size-1; i >= graph.size/2; i--) {
-        if (graph.order[i] >= graph.size / 2){
-            if (proposals[graph.order[i] - (graph.size / 2)] == 0) 
-                proposals[graph.order[i] - (graph.size / 2)] = 1;
-            else
-                return false;
-        } else {
-            if (proposals[graph.order[i]] == 0) 
-                proposals[graph.order[i]] = 1;
-            else   
-                return false;
-        }
+    int n = graph.size/2;
+    for (int i = 0; i < n; i++) {
+        if (graph.stronglyConnectedComponent[i] == graph.stronglyConnectedComponent[i+n])
+            return 0;
     }
-    return true;
+    return 1;
 }
 
-void DFS(Graph *graph, int* isAlreadyVisited, int vertice) {
+void DFS1(Graph *graph, int* isAlreadyVisited, int vertice) {
+    if (isAlreadyVisited[vertice]) 
+        return;
+    
     isAlreadyVisited[vertice] = 1;
+
     for (int i = 0; i < graph->size; i++) {
-        if (graph->matrix[vertice][i] == 1) { // for each neighbor vertice that has not yet been visited
-            if (isAlreadyVisited[i] == 0) {
-                DFS(graph, isAlreadyVisited, i);
-            } 
+        if (graph->matrix[vertice][i]) { // for each neighbor vertice that has not yet been visited
+            if (!isAlreadyVisited[i]) 
+                DFS1(graph, isAlreadyVisited, i);
         }
     }
+
     graph->addToOrder(vertice);
 }
 
+void DFS2(Graph* graph, int* isAlreadyVisitedInv, int vertice, int counter) {
+    if (isAlreadyVisitedInv[vertice])
+        return;
+
+    isAlreadyVisitedInv[vertice] = 1;
+    for (int i = 0; i < graph->size; i++) {
+        if (graph->matrix[vertice][i]) { // for each neighbor vertice that has not yet been visited
+            if (!isAlreadyVisitedInv[i]) 
+                DFS2(graph, isAlreadyVisitedInv, i, counter);
+        }
+    }
+    
+    graph->stronglyConnectedComponent[vertice] = counter;
+}
+
 void dephtFirstSearch(Graph *graph) {
-    // create array to mark visited vertices
+    // create array to mark visited vertices in normal DFS
     int* isAlreadyVisited = new int[graph->size];
     for (int i = 0; i < graph->size; i++) {
         isAlreadyVisited[i] = 0;
     }
+
+    // create array to mark visited vertices in topological order DFS
+    int* isAlreadyVisitedInv = new int[graph->size];
     for (int i = 0; i < graph->size; i++) {
-        if (isAlreadyVisited[i] == 0) {
-                DFS(graph, isAlreadyVisited, i);
+        isAlreadyVisitedInv[i] = 0;
+    }
+
+    // normal DFS to create topological order
+    for (int i = 0; i < graph->size; i++) {
+        if (!isAlreadyVisited[i]) {
+            DFS1(graph, isAlreadyVisited, i);
         } 
     }
+
+    // DFS in topological order
+    int counter = 0;
+    for (int i = 0; i < graph->orderCount; i++) {
+        int vertice = graph->order[i];
+
+        if (!isAlreadyVisitedInv[vertice]) {
+            DFS2(graph, isAlreadyVisitedInv, vertice, counter);
+            counter++;
+        }
+    } 
 }
 
 void printMatrix(Graph graph) {
@@ -166,7 +195,6 @@ Graph* createAdjMatrix(int numFollowers, int numProposals) {
 void readFile() {
     int numFollowers;
     int numProposals;
-    std::string output;
 
     std::cin >> numFollowers;
     std::cin >> numProposals;
@@ -188,6 +216,4 @@ void readFile() {
         std::cin >> numFollowers;
         std::cin >> numProposals;
     }
-
-    std::cout << output;
 }
