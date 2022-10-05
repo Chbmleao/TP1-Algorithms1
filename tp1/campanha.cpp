@@ -8,21 +8,18 @@
 
 Graph::Graph(int size) {
     this->size = size;
-    // create order vector and initialize with -1
-    this->order = std::vector<int>(this->size, -1);
     // create Strongly Connected Component vector and initialize with -1
     this->stronglyConnectedComponent = std::vector<int>(this->size, -1);
-
+    // create order vector and initialize with -1
+    this->order = std::vector<int>(this->size, -1);
     this->orderCount = 0;
+    
+    // create adjList, a vector with lists
     this->adjList = std::vector<std::list<int>>(this->size);
+    for (int i = 0; i < this->size; i++) {
+        this->adjList[i] = std::list<int>();
+    }
 }
-
-// int Graph::calculateIndex(int index, bool negative) {
-//     index--;
-//     if (negative) 
-//         index += this->size / 2;
-//     return index;
-// }
 
 void Graph::addToOrder(int index) {
     this->order[this->orderCount] = index;
@@ -100,41 +97,17 @@ void dephtFirstSearch(Graph *graph) {
     } 
 }
 
-// void printMatrix(Graph graph) {
-//     std::cout << std::setfill(' ') << std::setw(4) << " ";
-//     for (int i = 0; i < graph.size; i++) {
-//         if (i < graph.size / 2)
-//             std::cout << std::setfill(' ') << std::setw(4) << "X" << i+1;
-//         else
-//             std::cout << std::setfill(' ') << std::setw(4) << "X" << i+1 - graph.size/2 << "'";   
-//     }
-//     std::cout << std::endl;
-
-//     for (int i = 0; i < graph.size; i++) {
-//         if (i < graph.size / 2)
-//             std::cout << std::setfill(' ') << std::setw(3) << "X" << i+1 << " ";
-//         else
-//             std::cout << std::setfill(' ') << std::setw(3) << "X" << i+1 - graph.size/2 << "'"; 
-
-//         for (int j = 0; j < graph.size; j++) {
-//             if (j < graph.size / 2)
-//                 std::cout << std::setfill(' ') << std::setw(4) << graph.matrix[i][j] << " ";
-//             else
-//                 std::cout << std::setfill(' ') << std::setw(4) << graph.matrix[i][j] << "  ";
-//         }
-//         std::cout << std::endl;
-//     }
-// }
-
-// std::vector<std::vector<int>> createNullMatrix(int size) {
-//     std::vector<std::vector<int>> matrix(size, std::vector<int>(size));
-//     for (int i = 0; i < size; i++) {
-//         for (int j = 0; j < size; j++){
-//             matrix[i][j] = 0;
-//         }
-//     }
-//     return matrix;
-// }
+void printList(Graph graph) {
+    for (int i = 0; i < graph.size; i++) {
+        std::cout << i << " -> ";
+        std::list<int>::iterator it;
+        for (it = graph.adjList[i].begin(); it != graph.adjList[i].end(); it++) {
+            std::cout << *it << " / ";
+        }
+        std::cout << std::endl;
+    }
+    
+}
 
 Graph* createAdjList(int numFollowers, int numProposals) {
     Graph* graph = new Graph(2*numProposals);
@@ -145,6 +118,12 @@ Graph* createAdjList(int numFollowers, int numProposals) {
         std::cin >> accProposal2;
         std::cin >> rejProposal1;
         std::cin >> rejProposal2;
+
+        std::cout << accProposal1;
+        std::cout << accProposal2;
+        std::cout << rejProposal1;
+        std::cout << rejProposal2;
+        std::cout << std::endl;
 
         // accepted proposals treatment
         if (accProposal1 == 0 || accProposal2 == 0) {
@@ -180,6 +159,8 @@ void readFile() {
 
     while (numFollowers != 0 && numProposals != 0) {        
         Graph* graph = createAdjList(numFollowers, numProposals);
+        
+        printList(*graph);
 
         dephtFirstSearch(graph);
         
