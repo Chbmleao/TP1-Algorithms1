@@ -11,8 +11,8 @@ Graph::Graph(int size) {
     // create Strongly Connected Component vector and initialize with -1
     this->stronglyConnectedComponent = std::vector<int>(this->size, -1);
     // create order vector and initialize with -1
-    this->order = std::vector<int>(this->size, -1);
-    this->orderCount = 0;
+    this->dfsOrder = std::vector<int>(this->size, -1);
+    this->dfsOrderCount = 0;
     
     // create adjList, a vector with lists
     this->adjList = std::vector<std::list<int>>(this->size);
@@ -21,9 +21,9 @@ Graph::Graph(int size) {
     }
 }
 
-void Graph::addToOrder(int index) {
-    this->order[this->orderCount] = index;
-    this->orderCount++;
+void Graph::addToDfsOrder(int index) {
+    this->dfsOrder[this->dfsOrderCount] = index;
+    this->dfsOrderCount++;
 }
 
 bool isSatisfiable(Graph graph) {
@@ -36,9 +36,6 @@ bool isSatisfiable(Graph graph) {
 }
 
 void DFS1(Graph *graph, int* isAlreadyVisited, int vertice) {
-    if (isAlreadyVisited[vertice]) 
-        return;
-    
     isAlreadyVisited[vertice] = 1;
 
     std::list<int>::iterator it;
@@ -47,13 +44,10 @@ void DFS1(Graph *graph, int* isAlreadyVisited, int vertice) {
             DFS1(graph, isAlreadyVisited, *it);
     }
 
-    graph->addToOrder(vertice);
+    graph->addToDfsOrder(vertice);
 }
 
 void DFS2(Graph* graph, int* isAlreadyVisitedInv, int vertice, int counter) {
-    if (isAlreadyVisitedInv[vertice])
-        return;
-
     isAlreadyVisitedInv[vertice] = 1;
 
     std::list<int>::iterator it;
@@ -87,8 +81,8 @@ void dephtFirstSearch(Graph *graph) {
 
     // DFS in topological order
     int counter = 0;
-    for (int i = 0; i < graph->orderCount; i++) {
-        int vertice = graph->order[i];
+    for (int i = 0; i < graph->dfsOrderCount; i++) {
+        int vertice = graph->dfsOrder[i];
 
         if (!isAlreadyVisitedInv[vertice]) {
             DFS2(graph, isAlreadyVisitedInv, vertice, counter);
@@ -97,39 +91,26 @@ void dephtFirstSearch(Graph *graph) {
     } 
 }
 
-void printList(Graph graph) {
-    for (int i = 0; i < graph.size; i++) {
-        std::cout << i << " -> ";
-        std::list<int>::iterator it;
-        for (it = graph.adjList[i].begin(); it != graph.adjList[i].end(); it++) {
-            std::cout << *it << " / ";
-        }
-        std::cout << std::endl;
-    }
-    
-}
-
 Graph* createAdjList(int numFollowers, int numProposals) {
     Graph* graph = new Graph(2*numProposals);
    
     for (int i = 0; i < numFollowers; i++) {
         int accProposal1, accProposal2, rejProposal1, rejProposal2;
+        // receive the proposals accepted and rejected by a follower
         std::cin >> accProposal1;
         std::cin >> accProposal2;
         std::cin >> rejProposal1;
         std::cin >> rejProposal2;
-
-        std::cout << accProposal1;
-        std::cout << accProposal2;
-        std::cout << rejProposal1;
-        std::cout << rejProposal2;
-        std::cout << std::endl;
+        accProposal1--;
+        accProposal2--;
+        rejProposal1--;
+        rejProposal2--;
 
         // accepted proposals treatment
-        if (accProposal1 == 0 || accProposal2 == 0) {
-            if (accProposal1 == 0 && accProposal2 != 0) 
+        if (accProposal1 == -1 || accProposal2 == -1) {
+            if (accProposal1 == -1 && accProposal2 != -1) 
                 graph->adjList[accProposal2+numProposals].push_back(accProposal2); // Y' -> Y  
-            if (accProposal2 == 0 && accProposal1 != 0) 
+            if (accProposal2 == -1 && accProposal1 != -1) 
                 graph->adjList[accProposal1+numProposals].push_back(accProposal1); // X' -> X  
         } else {
             graph->adjList[accProposal1+numProposals].push_back(accProposal2); // X' -> Y 
@@ -137,10 +118,10 @@ Graph* createAdjList(int numFollowers, int numProposals) {
         }
         
         // rejected proposals treatment
-        if (rejProposal1 == 0 || rejProposal2 == 0) {
-            if (rejProposal1 == 0 && rejProposal2 != 0) 
+        if (rejProposal1 == -1 || rejProposal2 == -1) {
+            if (rejProposal1 == -1 && rejProposal2 != -1) 
                 graph->adjList[rejProposal2].push_back(rejProposal2+numProposals); // Y -> Y'
-            if (rejProposal2 == 0 && rejProposal1 != 0) 
+            if (rejProposal2 == -1 && rejProposal1 != -1) 
                 graph->adjList[rejProposal1].push_back(rejProposal1+numProposals); // X -> X'
         } else {
             graph->adjList[rejProposal1].push_back(rejProposal2+numProposals); // X -> Y'
@@ -159,8 +140,6 @@ void readFile() {
 
     while (numFollowers != 0 && numProposals != 0) {        
         Graph* graph = createAdjList(numFollowers, numProposals);
-        
-        printList(*graph);
 
         dephtFirstSearch(graph);
         
