@@ -19,6 +19,12 @@ Graph::Graph(int size) {
     for (int i = 0; i < this->size; i++) {
         this->adjList[i] = std::list<int>();
     }
+
+    // create adjListInv, a vector with lists
+    this->adjListInv = std::vector<std::list<int>>(this->size);
+    for (int i = 0; i < this->size; i++) {
+        this->adjListInv[i] = std::list<int>();
+    }
 }
 
 void Graph::addToDfsOrder(int index) {
@@ -51,7 +57,7 @@ void DFS2(Graph* graph, int* isAlreadyVisitedInv, int vertice, int counter) {
     isAlreadyVisitedInv[vertice] = 1;
 
     std::list<int>::iterator it;
-    for (it = graph->adjList[vertice].begin(); it != graph->adjList[vertice].end(); it++) {
+    for (it = graph->adjListInv[vertice].begin(); it != graph->adjListInv[vertice].end(); it++) {
         if (!isAlreadyVisitedInv[*it])
             DFS2(graph, isAlreadyVisitedInv, *it, counter);
     }
@@ -66,22 +72,22 @@ void dephtFirstSearch(Graph *graph) {
         isAlreadyVisited[i] = 0;
     }
 
-    // create array to mark visited vertices in topological order DFS
+    // create array to mark visited vertices in DFS1 order
     int* isAlreadyVisitedInv = new int[graph->size];
     for (int i = 0; i < graph->size; i++) {
         isAlreadyVisitedInv[i] = 0;
     }
 
-    // normal DFS to create topological order
+    // normal DFS to create an order
     for (int i = 0; i < graph->size; i++) {
         if (!isAlreadyVisited[i]) {
             DFS1(graph, isAlreadyVisited, i);
         } 
     }
 
-    // DFS in topological order
+    // DFS in DFS1 order
     int counter = 0;
-    for (int i = 0; i < graph->dfsOrderCount; i++) {
+    for (int i = graph->dfsOrderCount-1; i >= 0; i--) {
         int vertice = graph->dfsOrder[i];
 
         if (!isAlreadyVisitedInv[vertice]) {
@@ -106,6 +112,7 @@ Graph* createAdjList(int numFollowers, int numProposals) {
         rejProposal1--;
         rejProposal2--;
 
+        // adjList
         // accepted proposals treatment
         if (accProposal1 == -1 || accProposal2 == -1) {
             if (accProposal1 == -1 && accProposal2 != -1) 
@@ -126,6 +133,29 @@ Graph* createAdjList(int numFollowers, int numProposals) {
         } else {
             graph->adjList[rejProposal1].push_back(rejProposal2+numProposals); // X -> Y'
             graph->adjList[rejProposal2].push_back(rejProposal1+numProposals); // Y -> X'
+        }
+
+        // adjListInv
+        // accepted proposals treatment
+        if (accProposal1 == -1 || accProposal2 == -1) {
+            if (accProposal1 == -1 && accProposal2 != -1) 
+                graph->adjListInv[accProposal2].push_back(accProposal2+numProposals); // Y' -> Y  
+            if (accProposal2 == -1 && accProposal1 != -1) 
+                graph->adjListInv[accProposal1].push_back(accProposal1+numProposals); // X' -> X  
+        } else {
+            graph->adjListInv[accProposal2].push_back(accProposal1+numProposals); // X' -> Y 
+            graph->adjListInv[accProposal1].push_back(accProposal2+numProposals); // Y' -> X
+        }
+        
+        // rejected proposals treatment
+        if (rejProposal1 == -1 || rejProposal2 == -1) {
+            if (rejProposal1 == -1 && rejProposal2 != -1) 
+                graph->adjListInv[rejProposal2+numProposals].push_back(rejProposal2); // Y -> Y'
+            if (rejProposal2 == -1 && rejProposal1 != -1) 
+                graph->adjListInv[rejProposal1+numProposals].push_back(rejProposal1); // X -> X'
+        } else {
+            graph->adjListInv[rejProposal2+numProposals].push_back(rejProposal1); // X -> Y'
+            graph->adjListInv[rejProposal1+numProposals].push_back(rejProposal2); // Y -> X'
         }
     }
     return graph;

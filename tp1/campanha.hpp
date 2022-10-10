@@ -14,7 +14,8 @@ class Graph {
         int dfsOrderCount;
         std::vector<int> dfsOrder;
         std::vector<int> stronglyConnectedComponent;
-        std::vector<std::list<int>> adjList; 
+        std::vector<std::list<int>> adjList;
+        std::vector<std::list<int>> adjListInv;  
 };
 
 bool isSatisfiable(Graph graph);
