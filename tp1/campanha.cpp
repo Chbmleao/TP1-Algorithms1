@@ -27,20 +27,24 @@ Graph::Graph(int size) {
     }
 }
 
+// insert a vertice into the array dfsOrder
 void Graph::addToDfsOrder(int index) {
     this->dfsOrder[this->dfsOrderCount] = index;
     this->dfsOrderCount++;
 }
 
+// if the boolean expression is satisfiable returns 1, otherwise, returns 0 
 bool isSatisfiable(Graph graph) {
     int n = graph.size/2;
     for (int i = 0; i < n; i++) {
+        // verify if a vertice is in the same strongly connected component as its complement
         if (graph.stronglyConnectedComponent[i] == graph.stronglyConnectedComponent[i+n])
             return 0;
     }
     return 1;
 }
 
+// walk on the graph, stores the return order
 void DFS1(Graph *graph, int* isAlreadyVisited, int vertice) {
     isAlreadyVisited[vertice] = 1;
 
@@ -53,6 +57,7 @@ void DFS1(Graph *graph, int* isAlreadyVisited, int vertice) {
     graph->addToDfsOrder(vertice);
 }
 
+// walk on the inverse graph, stores the strongly connected component
 void DFS2(Graph* graph, int* isAlreadyVisitedInv, int vertice, int counter) {
     isAlreadyVisitedInv[vertice] = 1;
 
